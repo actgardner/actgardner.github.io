@@ -1,0 +1,13 @@
+# Site settings
+title: Alan's Web Ramblings
+email: alanctgardner@gmail.com
+description: > # this means to ignore newlines until "baseurl:"
+  Ramblings, collected. 
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://agardner.me" # the base hostname & protocol for your site
+twitter_username: alanctgardner
+github_username:  alanctgardner
+
+# Build settings
+markdown: redcarpet
+extensions: [fenced_code_blocks]
