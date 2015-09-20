@@ -49,3 +49,7 @@ Ultimately the errors were from two separate issues:
 [Issue #7555](https://github.com/golang/go/issues/7555) - `6l` can't find `strdup`. There's no root cause I can find, it seems like MinGW's GCC implicitly links in some extra objects that `6l` can't find. I tested Go 1.3.3, 1.4.2 and 1.5.0, and they all exhibit this issue when using internal linking.
 
 The ultimate solution to both issues was in [issue #4069](https://github.com/golang/go/issues/4069) - Go 1.5 supports (and defaults to) external linking on Windows. This uses GCC for the final linking process, eliminating both bugs.
+
+*edit*: For people who really need a version of MinGW that works with Go 1.3.3, I recommend [this one](http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.1/).
+
+`6l` and `6c` are the names for the linker and compiler on x86-64. Other platforms (ARM, x86) use other numbers, but the functionality is the same - these bugs may or may not exist on other architectures.
