@@ -1,15 +1,19 @@
 ---
 layout: post
 title:  "Golang Escape Analysis"
-date:   2015-09-20 00:00:00
+date:   2015-10-16 00:00:00
 categories: golang garbage collection gc escape analysis
 ---
 
-Anyone who's written or heard of Go is probably aware that it's garbage-collected. However, it's worth knowing that every variable in Go is not allocated on the heap, and doesn't need to be garbage collected. The Go compiler is smart enough to perform escape analysis to determine whether a variable can be allocated on the stack, or whether it must be heap-allocated - see (this post)[https://scvalex.net/posts/29/] for a quick introduction to escape analysis as performed by the Go compiler. There are many (documented, pathological cases as of Go 1.5)[https://docs.google.com/document/d/1CxgUBPlx9iJzkz9JWkb6tIpTe5q32QDmz8l0BouG0Cw/preview] where variables may be needlessly heap allocated.
+Anyone who's written any Go is probably aware that it has garbage-collection. However, every variable in Go is not allocated on the heap, and variables that aren't on the heap don't need to be garbage collected. The Go compiler is smart enough to perform escape analysis to determine whether a variable can be allocated on the stack, or whether it must be heap-allocated. The basic rule is that if a reference to a variable is returned from the function where it is declared, it "escapes" - it can be referenced after the function returns, so it must be heap-allocated. This is complicated by:
 
-If you've (profiled heap usage)[http://blog.golang.org/profiling-go-programs] and identified hot spots, you may be able to eliminate some of them by working with the compiler to heap allocate variables. Passing the argument `-gcflags '-m'` to any `go` command (`build`, `test`, `install`) makes the compiler print detailed escape analysis output. Let's walk through a few examples.
+- functions calling other functions
+- references being assigned to struct members
+- slices and maps
+- cgo taking pointers to variables
 
-Let's start simple:
+Go builds a graph of function calls, and traces the flow of input arguments and return values. A function may take a reference to one of it's arguments, but if that reference is not returned, the variable does not escape. A function may also return a reference, but that reference may be dereferenced or not returned by another function in the stack before the function which declared the variable returns. To illustrate a few simple cases, we can run the compiler with `-gcflags '-m'` to print verbose escape analysis information: 
+
 ```
 package main
 
@@ -25,7 +29,7 @@ func identity(x S) S {
 }
 ```
 
-You'll have to build this with `go run -gcflags '-m -l'` - the `-l` flag prevents the method `identity` from being inlined (that's a topic for another time). The output is: nothing! Go uses pass-by-value semantics, so the `x` variable from `main` will always be copied into the stack of `identity`. In general code without references always uses stack allocation, trivially. There's no escape analysis to do. Let's try something harder:
+You'll have to build this with `go run -gcflags '-m -l'` - the `-l` flag prevents the function `identity` from being inlined (that's a topic for another time). The output is: nothing! Go uses pass-by-value semantics, so the `x` variable from `main` will always be copied into the stack of `identity`. In general code without references always uses stack allocation, trivially. There's no escape analysis to do. Let's try something harder:
 
 ```
 package main
@@ -50,7 +54,7 @@ And the output:
 ./escape.go:7: main &x does not escape
 ```
 
-The first line shows that the variable "flows through": the input variable is returned as an output.  When `identity` returns `z` can be copied onto the stack of the calling function. The second line shows that the reference to `x` we take on line 7 never escapes `main`. No variables are allocated on the heap. 
+The first line shows that the variable "flows through": the input variable is returned as an output.  But `identity` doesn't take a reference to `z`, so the variable doesn't escape. No references to `x` survive past `main` returning, so `x` can be allocated as part of the stack frame of `main`.
 
 A third experiment:
 
@@ -76,9 +80,63 @@ And the output:
 ./escape.go:11: &z escapes to heap
 ```
 
-Now there's some escaping going on. Since we return a reference to `z`, it can't be allocated on the stack - where would the reference point when `identity` returns? Instead it escapes to the heap. This is a toy example - `ref` would be inlined by the compiler if we weren't stopping it - but it demonstrates how to interpret some `-m` output.
+Now there's some escaping going on. Remember that Go has pass-by-value semantics, so `z` is a copy of the variable `x` from `main`. `ref` return a reference to `z`, so `z` can't be part of the stack frame for `ref` - where would the reference point when `ref` returns? Instead it escapes to the heap. Even though `main` immediately throws away the reference without dereferencing it, Go's escape analysis is not sophisticated enough to figure this out - it only looks at the flow of input and return variables. It's worth noting that in this case `ref` would be inlined by the compiler if we weren't stopping it.
 
-Finally, a slightly more insidious example: 
+What if a reference is assigned to a struct member?
+
+```
+package main
+
+type S struct {
+  M *int
+}
+
+func main() {
+  var i int
+  refStruct(i)
+}
+
+func refStruct(y int) (z S) {
+  z.M = &y
+  return z
+}
+```
+
+Output:
+```
+./escape.go:12: moved to heap: y
+./escape.go:13: &y escapes to heap
+```
+
+In this case Go can still trace the flow of references, even though the reference is a member of a struct. Since `refStruct` takes a reference and returns it, `y` must escape. Compare with this case:
+
+```
+package main
+
+type S struct {
+  M *int
+}
+
+func main() {
+  var i int
+  refStruct(&i)
+}
+
+func refStruct(y *int) (z S) {
+  z.M = y
+  return z
+}
+```
+
+Output:
+```
+./escape.go:12: leaking param: y to result z
+./escape.go:9: main &i does not escape
+```
+
+Since `main` takes the reference and passes it to `refStruct`, the reference never outlives the stack frame where the referenced variable was declared. This and the preceding program have slightly different semantics, but if the second program is sufficient it would be more efficient: in the first example `i` must be allocated on the stack of `main`, then re-allocated on the heap and copied as an argument to `refStruct`. In the second example `i` is only allocated once, and a reference is passed around. 
+
+A slightly more insidious example: 
 
 ```
 package main
@@ -108,4 +166,8 @@ Output:
 ./escape.go:10: main &x does not escape
 ```
 
-This is an example of "Flow through function arguments" from the document linked above: Go can only handle arguments which flow through from input to output, not input to other input.  
+The problem here is that `y` is assigned to a member of an input struct. Go can't trace that relationship - inputs are only allowed to flow to outputs - so the escape analysis fails and the variable must be heap allocated. There are many documented, pathological cases (as of Go 1.5) where variables must be heap allocated due to limitations of Go's escape analysis - (see this link)[https://docs.google.com/document/d/1CxgUBPlx9iJzkz9JWkb6tIpTe5q32QDmz8l0BouG0Cw/preview]. 
+
+Finally, what about maps and slices? Remember that slices and maps are actually just Go structs with pointers to heap-allocated memory: the slice struct is exposed in the `reflect` package ((SliceHeader)[https://golang.org/pkg/reflect/#SliceHeader]). The map struct is arder to find, but it exists: (hmap)[https://golang.org/src/runtime/hashmap.go#L102]. If these structures don't escape they'll be stack-allocated, but the data itself in the backing array or hash buckets will be heap-allocated every time. The only way to avoid this would be to allocate a fixed-size array (like `[10000]int`). 
+
+If you've (profiled your program's heap usage)[http://blog.golang.org/profiling-go-programs] and need to reduce GC time, there may be some wins from moving frequently allocated variables off the heap. It's also just a fascinating topic: for further reading about how the HotSpot JVM handles escape analysis, check out (this paper)[http://www.cc.gatech.edu/~harrold/6340/cs6340_fall2009/Readings/choi99escape.pdf] which talks about stack allocation, and also about detecting when synchronization can be elided. 
