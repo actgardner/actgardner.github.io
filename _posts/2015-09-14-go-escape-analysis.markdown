@@ -16,7 +16,7 @@ Go's escape analysis is more basic than the HotSpot JVM, for example. The basic 
 
 To perform escape analysis, Go builds a graph of function calls at compile time, and traces the flow of input arguments and return values. A function may take a reference to one of it's arguments, but if that reference is not returned, the variable does not escape. A function may also return a reference, but that reference may be dereferenced or not returned by another function in the stack before the function which declared the variable returns. To illustrate a few simple cases, we can run the compiler with `-gcflags '-m'`, which will print verbose escape analysis information: 
 
-```
+```golang
 package main
 
 type S struct {}
@@ -33,7 +33,7 @@ func identity(x S) S {
 
 You'll have to build this with `go run -gcflags '-m -l'` - the `-l` flag prevents the function `identity` from being inlined (that's a topic for another time). The output is: nothing! Go uses pass-by-value semantics, so the `x` variable from `main` will always be copied into the stack of `identity`. In general code without references always uses stack allocation, trivially. There's no escape analysis to do. Let's try something harder:
 
-```
+```go
 package main
 
 type S struct {}
@@ -60,7 +60,7 @@ The first line shows that the variable "flows through": the input variable is re
 
 A third experiment:
 
-```
+```go
 package main
 
 type S struct {}
@@ -86,7 +86,7 @@ Now there's some escaping going on. Remember that Go has pass-by-value semantics
 
 What if a reference is assigned to a struct member?
 
-```
+```go
 package main
 
 type S struct {
@@ -113,7 +113,7 @@ Output:
 
 In this case Go can still trace the flow of references, even though the reference is a member of a struct. Since `refStruct` takes a reference and returns it, `y` must escape. Compare with this case:
 
-```
+```go
 package main
 
 type S struct {
@@ -142,7 +142,7 @@ Since `main` takes the reference and passes it to `refStruct`, the reference nev
 
 A slightly more insidious example: 
 
-```
+```go
 package main
 
 type S struct {
