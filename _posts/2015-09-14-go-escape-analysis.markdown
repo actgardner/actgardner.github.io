@@ -16,7 +16,7 @@ Go's escape analysis is more basic than the HotSpot JVM, for example. The basic 
 
 To perform escape analysis, Go builds a graph of function calls at compile time, and traces the flow of input arguments and return values. A function may take a reference to one of it's arguments, but if that reference is not returned, the variable does not escape. A function may also return a reference, but that reference may be dereferenced or not returned by another function in the stack before the function which declared the variable returns. To illustrate a few simple cases, we can run the compiler with `-gcflags '-m'`, which will print verbose escape analysis information: 
 
-```golang
+```go
 package main
 
 type S struct {}
