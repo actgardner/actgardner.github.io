@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Golang Escape Analysis"
+title:  "Golang escape analysis"
 date:   2015-10-18 00:00:00
 categories: golang garbage collection gc escape analysis
 ---
