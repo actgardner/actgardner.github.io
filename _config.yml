@@ -9,5 +9,4 @@ twitter_username: alanctgardner
 github_username:  alanctgardner
 
 # Build settings
-markdown: redcarpet
 extensions: [fenced_code_blocks]
