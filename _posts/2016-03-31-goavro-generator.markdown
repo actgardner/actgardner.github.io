@@ -140,4 +140,4 @@ Of course, gogen-avro has a bunch of limitations right now. It doesn't support:
 - nested records (possibly?)
 - container formats
 
-In general it also hasn't been tested very thoroughly - there's only one round-trip test for primitive fields right now. It's probably not ready for production use, especially if you produce submarines or nuclear reactors. But it'd be awesome to have more contributions and schemas to test with! Contribute issues/PRs [on Github](https://github.com/alanctgardner/gogen-avro).
+In general it also hasn't been tested very thoroughly - there's only one round-trip test for primitive fields right now. It's probably not ready for production use, especially if you produce submarines or nuclear reactors. But it'd be awesome to have more contributions and schemas to test with! [Contribute issues/PRs on Github](https://github.com/alanctgardner/gogen-avro).
