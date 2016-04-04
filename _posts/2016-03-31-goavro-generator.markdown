@@ -9,9 +9,9 @@ I normally use LinkedIn's excellent [goavro library](https://github.com/linkedin
 
 - every field being set has to be validated against the schema
 - every value is cast to an `interface{}`, and then recast when it's encoded
-- setting a map field in the record requires the value is of type `map[string]interface{}`, which requires re-casting every element
-- same for arrays
-- types are only enforced at runtime
+- setting a map field in the record requires the value is of type `map[string]interface{}`, which requires re-casting every value
+- arrays also need to be of the type `[]interface{}`, which required re-casting every element
+- field types are only enforced at runtime
 
 For example, given this record schema:
 
@@ -43,7 +43,7 @@ Encoding a single record requires the following method calls:
         someRecord.Set("BytesField", []byte{1, 2, 3, 4})
 ```
 
-A microbenchmark shows this takes about 4400ns per record to set the fields and encode it into a `byte.Buffer`.
+A microbenchmark on my laptop takes about 4400ns per record to set the fields and encode it into a `bytes.Buffer`.
 
 By way of comparison, I've been working on a project - [gogen-avro](https://github.com/alanctgardner/gogen-avro) - which generates Go structs and codecs from an Avro schema. For the above schema, it generates the following:
 
@@ -100,9 +100,9 @@ func writePrimitiveTestRecord(r PrimitiveTestRecord, w io.Writer) error {
 
 ```
 
-A microbenchmark of this code takes about 600ns per record to set the fields - a 7x speedup!
+A microbenchmark of this code takes about 600ns per record to set the fields - a 7x speedup! Populating the struct and calling `r.Serialize()` is also much more readable, and benefits from compile-time checking.
 
-Of course, this isn't that exciting if you've only got primitive types. Fortunately gogen-avro can also handle arrays, maps, and union fields. Unions are particularly hairy because we want to avoid reflection and casting to `interface{}`. A particularly large union results in code like this:
+Besides primitive types, gogen-avro can also handle arrays, maps, and union fields. Unions are particularly hairy because we want to avoid type casting and `interface{}`. A particularly large union results in code like this:
 
 ```
 type UnionIntStringFloatDoubleLongBoolNull struct {
@@ -132,12 +132,11 @@ const (
 )
 ```
 
-Of course, gogen-avro has a bunch of limitations right now. It doesn't support:
+gogen-avro has a bunch of limitations right now. It doesn't support:
 
 - enumerations or fixed fields
 - decoding records 
 - setting the Go package name
-- nested records (possibly?)
 - container formats
 
-In general it also hasn't been tested very thoroughly - there's only one round-trip test for primitive fields right now. It's probably not ready for production use, especially if you produce submarines or nuclear reactors. But it'd be awesome to have more contributions and schemas to test with! [Contribute issues/PRs on Github](https://github.com/alanctgardner/gogen-avro).
+In general it also hasn't been tested very thoroughly - we only round-trip test primitives, arrays and maps right now. It's probably not ready for production use, especially if you produce submarines or nuclear reactors. But it'd be awesome to have more contributions and schemas to test with! [Contribute issues/PRs on Github](https://github.com/alanctgardner/gogen-avro).
