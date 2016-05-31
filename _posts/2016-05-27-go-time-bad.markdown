@@ -5,6 +5,8 @@ date:   2016-05-27 00:00:00
 categories: golang time design
 ---
 
+**[Someone on Twitter](https://twitter.com/rogpeppe/status/737671889376714752) astutely pointed out that the whole type-punning fix isn't necessary, since `time.Date` can do everything we need to replace the standard parser. While having to fork the standard library is still gross, this definitely makes it a little less gross. I'll be rewriting this package accordingly :)**
+
 At my day job we ship a product that (in part) parses log messages. We use Go for log collection and parsing, and generally this works pretty well - there's another blog post in the works about why Go is great for this use case. This post is about something Go does not do well. It does it _weirdly_. There are a few weird things in Go: 
 
 **Regexes?** RE2, not PCRE. 
