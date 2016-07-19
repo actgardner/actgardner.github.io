@@ -33,6 +33,8 @@ Running `objdump -T <binary> | grep GLIBC` gives a list of all the symbols being
 
 So `sscanf` is the method call that isn't supported. It was pretty easy in this case to rewrite the program in a way that didn't use `sscanf` - once this was done, the binary ran on the 2.6.18 kernel with no problems. 
 
+*edit: Thanks to eagle-eyed reader Thomas for pointing out that the version comparison in this script was wrong! It didn't handle 2-digit minor versions (like 2.11) correctly. The script below has been fixed:*
+
 For the future, I wrote this little bash script which finds the highest version of glibc used in a binary and compares it to a maximum allowed glibc version. This can be used as part of a build process to catch new dependencies: 
 
 ```bash
@@ -46,9 +48,15 @@ if [ -z "$BIN" ] || [ -z "$MAX_ALLOWED_VER" ]; then
   exit 1
 fi
 
-MAX_VER="$(objdump -T "$BIN" | sed -n 's/.*GLIBC_\([0-9]\.[0-9]\+\).*$/\1/p' | sort -g | tail -n 1)"
+MAX_ALLOWED_MAJ_VER="$(echo $MAX_ALLOWED_VER | cut -f 1 -d '.')"
+MAX_ALLOWED_MIN_VER="$(echo $MAX_ALLOWED_VER | cut -f 2 -d '.')"
 
-if echo "$MAX_VER $MAX_ALLOWED_VER" | awk '{exit $1>$2?0:1}'; then
+# Get the max major version, then find the max minor version for that major
+MAX_MAJ_VER="$(objdump -T "$BIN" | sed -n 's/.*GLIBC_\([0-9]\.[0-9]\+\).*$/\1/p' | cut -f 1 -d '.' | sort -g | tail -n 1)"
+MAX_MIN_VER="$(objdump -T "$BIN" | grep GLIBC_$MAX_MAJ_VER | sed -n 's/.*GLIBC_\([0-9]\.[0-9]\+\).*$/\1/p' | cut -f 2 -d '.' | sort -g | tail -n 1)"
+MAX_VER="$MAX_MAJ_VER.$MAX_MIN_VER"
+
+if echo "$MAX_MAJ_VER $MAX_ALLOWED_MAJ_VER $MAX_MIN_VER $MAX_ALLOWED_MIN_VER" | awk '{exit $1>$2||$3>$4?0:1}'; then
 	echo "FAIL - Got max GLIBC version $MAX_VER, greater than allowed max $MAX_ALLOWED_VER"
 	exit 1
 else
