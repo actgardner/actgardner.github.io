@@ -16,6 +16,7 @@ Running `Get-EventLog`from Powershell didn't show a "Forwarded Events" channel. 
 Finally, I came across a [Splunk post about Event Forwarding](http://blogs.splunk.com/2014/02/03/forwarding-windows-event-logs-to-another-host/), which mentions offhandedly that the default forwarding log is "ForwardedEvents" (all one word). In a fit of desperation, I try subscribing to "ForwardedEvents" and everything fits together. Hooray.
 
 Takeaways:
+
 - You can't have spaces in your channel names when you call `EvtSubscribe`. Just take the spaces out and everything will work. This isn't in the docs as far as I could see, and it's not reflected in the Event Viewer or `Get-WinEvent`.
 - `EvtSubscribe` *does* work with Event Forwarding out of the box. There might be more corner cases I'll cover later.
 - You should always use `Get-WinEvent` and not `Get-EventLog` to work with event logs.
