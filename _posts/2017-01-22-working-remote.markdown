@@ -7,7 +7,7 @@ categories: teams distributed work-from-home remote-work remote
 
 I want to change things up a little for the first post of 2017, and reflect on the past two years.
 I've been working at Rocana, where we're building an entirely distributed company. 
-There's no head office, there's no satellite offices - every person works from home 
+There's no head office, there are no satellite offices - every person works from home 
 (or wherever they're comfortable) distributed across four time zones.
 We see each other face-to-face every 3-4 months when we fly in for team meetings, 
 but for the most part collaboration is over Slack, video chats and Github. 
@@ -15,7 +15,7 @@ but for the most part collaboration is over Slack, video chats and Github.
 Working remotely has a lot of benefits. I love being able to live in Ottawa, 
 while working with and learning from brilliant people across the continent.
 Being able to travel and work from other places is a great perk,
-although I don't think I'm cut out to be a "digital nomad" (ugh, millenials).
+although I don't think I'm cut out to be a "digital nomad" (ugh, millennials).
 The flexible schedule and the absence of a commute make it easier to make 
 the best use of your time. In Ottawa I'd much rather do my early-spring
 marathon training at noon than 7PM, thanks.
