@@ -8,7 +8,7 @@ categories: teams distributed work-from-home remote-work remote
 I want to change things up a little for the first post of 2017, and reflect on the past two years.
 I've been working at Rocana, where we're building an entirely distributed company. 
 There's no head office, there are no satellite offices - every person works from home 
-(or wherever they're comfortable) distributed across four time zones.
+(or wherever they're comfortable) distributed across five time zones.
 We see each other face-to-face every 3-4 months when we fly in for team meetings, 
 but for the most part collaboration is over Slack, video chats and Github. 
 
