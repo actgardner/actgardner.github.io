@@ -5,7 +5,7 @@ description: > # this means to ignore newlines until "baseurl:"
   Ramblings, collected. 
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "http://agardner.me" # the base hostname & protocol for your site
-twitter_username: actgardner
+twitter_username: act_gardner
 github_username:  actgardner
 
 # Build settings
