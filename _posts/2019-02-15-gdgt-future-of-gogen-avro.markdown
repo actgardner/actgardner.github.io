@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "GADGT: The futue of gogen-avro"
+title:  "GADGT: The future of gogen-avro"
 date:   2019-02-15 00:00:00
 categories: golang avro vm gadgt go deserializer
 ---
