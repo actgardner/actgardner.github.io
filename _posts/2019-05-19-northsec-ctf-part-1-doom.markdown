@@ -20,7 +20,7 @@ The problem description offered a ZIP file and four goals:
 
 The "secret room" key was available in-game but the other goals would need to be demonstrated to the organizers on a clean system - you couldn't just hack your copy of the game to add keys.
 
-The ZIP file contained a Windows build of (ZDoom)[https://zdoom.org/downloads] with a bunch of files, including two called `zoombies.wad` and `textures.wad` that stood out. 
+The ZIP file contained a Windows build of [ZDoom](https://zdoom.org/downloads) with a bunch of files, including two called `zoombies.wad` and `textures.wad` that stood out. 
 ZDoom itself is a game engine, and [WAD (Where's All the Data) files](https://zdoom.org/wiki/WAD) contain the data for the DOOM engine - levels, menu configs, etc. This ZIP was a custom game that ran on the DOOM engine!
 
 To start I wanted to play the game. The ZIP only had a Windows binary, so I went out to find an OS X build of ZDoom. 
@@ -58,7 +58,8 @@ I tried reading the source of some ACS compilers on Github but nothing was comin
 As a last-ditch effort I downloaded [ListACS](https://github.com/alexey-lysiuk/ListACS) from Github, which had a measly two stars and very little activity.
 
 ListACS was just what I needed! 
-It printed the method and script bodies with the mnemonics and arguments for every instruction. 
+It printed the method and script bodies with the mnemonics and arguments for every instruction. (Update: it turns out ListACS has a flag to produce ACS code and not just the mnemonics - this would have been way simpler than reading bytecode. Always read the docs!).
+
 Combined with the strings table and the method names it was possible to deduce which methods were used to print the text on the screen, to check the value of the key, etc.
 I've included the disassembly of the key-checking routine, with some comments:
 
