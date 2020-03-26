@@ -4,7 +4,7 @@ title: About Me
 permalink: /about/
 ---
 
-My name is Alysha Gardner. I'm a transgender woman working in the tech industry, with a focus on Data and Operations.
+My name is Alysha Gardner. I'm a non-binary software engineer with a focus on Data and Operations.
 I've worked as an IC and technical lead on projects working with Apache Hadoop, Spark, Kafka, Golang, Kubernetes, AWS and Google Cloud.
 I love learning about databases, OS internals (Windows, Linux and others) and distributed systems.
 
